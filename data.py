@@ -4,15 +4,15 @@ import torch
 
 
 class Dataset(TorchDataset):
-    def __init__(self, train=True):
-        if train:
-            self.Xs = torch.tensor(np.load("Xtr.npy"))
-            self.Ys = torch.tensor(np.load("Str.npy"))
-        else:
-            self.Xs = torch.tensor(np.load("Xts.npy"))
-            self.Ys = torch.tensor(np.load("Yts.npy"))
-        self.path = None
+    def __init__(self, path, train=True):
+        self.path = path
         self.T = None
+        if train:
+            self.Xs = torch.tensor(np.load(f"{self.path}/Xtr.npy"))
+            self.Ys = torch.tensor(np.load(f"{self.path}/Str.npy"))
+        else:
+            self.Xs = torch.tensor(np.load(f"{self.path}/Xts.npy"))
+            self.Ys = torch.tensor(np.load(f"{self.path}/Yts.npy"))
 
     def __len__(self):
         return len(self.Xs)
@@ -23,8 +23,7 @@ class Dataset(TorchDataset):
 
 class FashionMNIST5(Dataset):
     def __init__(self, train=True):
-        super().__init__(train)
-        self.path = "datasets/FashionMNIST0.5"
+        super().__init__("datasets/FashionMNIST0.5", train)
         self.T = torch.tensor(
             [[0.5, 0.2, 0.3], [0.3, 0.5, 0.2], [0.2, 0.3, 0.5]]
         )
@@ -32,7 +31,7 @@ class FashionMNIST5(Dataset):
 
 class FashionMNIST6(Dataset):
     def __init__(self, train=True):
-        super().__init__(train)
+        super().__init__("datasets/FashionMNIST0.6", train)
         self.path = "datasets/FashionMNIST0.6"
         self.T = torch.tensor(
             [[0.4, 0.3, 0.3], [0.3, 0.4, 0.3], [0.3, 0.3, 0.4]]
@@ -41,19 +40,15 @@ class FashionMNIST6(Dataset):
 
 class CIFAR(Dataset):
     def __init__(self, train=True):
-        super().__init__(train)
-        self.path = "datasets/CIFAR"
+        super().__init__("datasets/CIFAR", train)
 
 
 if __name__ == "__main__":
-    one = FashionMNIST5()
-    print(one.get_test_data())
-    print(one.get_test_data())
+    pass
+    # from matplotlib import pyplot as plt
 
-    two = FashionMNIST6()
-    print(two.get_test_data())
-    print(two.get_test_data())
-
-    three = CIFAR()
-    print(three.get_test_data())
-    print(three.get_test_data())
+    # one = CIFAR()
+    # for i in range(len(one)):
+    #     plt.imshow(one[i][0], cmap="gray")
+    #     plt.show()
+    #     plt.close()
