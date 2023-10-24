@@ -3,6 +3,9 @@ from torch.utils.data import Dataset as TorchDataset
 import torch
 
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+
 class Dataset(TorchDataset):
     def __init__(self, path, train=True):
         self.path = path
@@ -13,6 +16,9 @@ class Dataset(TorchDataset):
         else:
             self.Xs = torch.tensor(np.load(f"{self.path}/Xts.npy"))
             self.Ys = torch.tensor(np.load(f"{self.path}/Yts.npy"))
+        self.Xs = self.Xs.float() / self.Xs.max()
+        self.Xs = self.Xs.to(device)
+        self.Ys = self.Ys.to(device)
 
     def __len__(self):
         return len(self.Xs)
