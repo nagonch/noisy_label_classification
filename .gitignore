@@ -1,0 +1,7 @@
+datasets
+trained_model
+venv
+.ipynb_checkpoints
+*.ipynb
+*.data
+*.pdf
