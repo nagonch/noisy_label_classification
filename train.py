@@ -10,19 +10,26 @@ from data import CIFAR, FashionMNIST5, FashionMNIST6
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-def train_backward_correction(
+def train(
     model,
     train_dataloader,
     n_epochs,
+    transition_matrix,
+    forward_correction=True,
 ):
+    inv_transition = torch.linalg.inv(transition_matrix).to(device)
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.01)
+    optimizer = optim.Adam(model.parameters(), lr=1e-4)
+    model.train()
 
     for epoch in range(n_epochs):
         for X, y in tqdm(train_dataloader, leave=False):
             optimizer.zero_grad()
             outputs = model(X)
-            loss = criterion(outputs, y)
+            probabilities = torch.nn.functional.softmax(outputs, dim=1)
+            if forward_correction:
+                probabilities = (inv_transition @ probabilities.T).T
+            loss = criterion(probabilities, y)
             loss.backward()
             optimizer.step()
         print(f"Epoch [{epoch + 1}/100], Loss: {loss.item()}")
@@ -30,7 +37,7 @@ def train_backward_correction(
 
 
 if __name__ == "__main__":
-    dataset = CIFAR()
+    dataset = FashionMNIST5()
     training_data = DataLoader(dataset, batch_size=100, shuffle=True)
-    model = ResnetPretrained(3, 3).to(device)
-    train_backward_correction(model, training_data, 100)
+    model = ResnetPretrained(1, 3).to(device)
+    train(model, training_data, 100, dataset.T)
