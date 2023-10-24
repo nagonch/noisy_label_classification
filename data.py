@@ -1,52 +1,67 @@
 import numpy as np
-
-
-class Dataset:
-    """
-    A dataset base class
-    get_train_data : return train data (X, Y)
-    get_test_data : return train data (X, Y)
-    get_transition_matrix : return transition matrix T
-    """
-
-    def __init__(self):
-        self.path = None
-        self.T = None
-
-    def get_train_data(self):
-        X = np.load(f"{self.path}/Xtr.npy")
-        Y = np.load(f"{self.path}/Str.npy")
-
-        return X, Y
-
-    def get_test_data(self):
-        X = np.load(f"{self.path}/Xts.npy")
-        Y = np.load(f"{self.path}/Yts.npy")
-
-        return X, Y
-
-    def get_transition_matrix(self):
-        return self.T
+from torch.utils.data import Dataset
+import torch
 
 
 class FashionMNIST5(Dataset):
-    def __init__(self):
+    def __init__(self, train=True):
         super().__init__()
         self.path = "datasets/FashionMNIST0.5"
-        self.T = np.array([[0.5, 0.2, 0.3], [0.3, 0.5, 0.2], [0.2, 0.3, 0.5]])
+        self.T = torch.tensor(
+            [[0.5, 0.2, 0.3], [0.3, 0.5, 0.2], [0.2, 0.3, 0.5]]
+        )
+        if train:
+            self.Xs = torch.tensor(np.load("Xtr.npy"))
+            self.Ys = torch.tensor(np.load("Str.npy"))
+        else:
+            self.Xs = torch.tensor(np.load("Xts.npy"))
+            self.Ys = torch.tensor(np.load("Yts.npy"))
+
+    def __len__(self):
+        return len(self.Xs)
+
+    def __getitem__(self, i):
+        return self.Xs[i], self.Ys[i]
 
 
 class FashionMNIST6(Dataset):
-    def __init__(self):
+    def __init__(self, train=True):
         super().__init__()
         self.path = "datasets/FashionMNIST0.6"
-        self.T = np.array([[0.4, 0.3, 0.3], [0.3, 0.4, 0.3], [0.3, 0.3, 0.4]])
+        self.T = torch.tensor(
+            [[0.4, 0.3, 0.3], [0.3, 0.4, 0.3], [0.3, 0.3, 0.4]]
+        )
+        if train:
+            self.Xs = torch.tensor(np.load("Xtr.npy"))
+            self.Ys = torch.tensor(np.load("Str.npy"))
+        else:
+            self.Xs = torch.tensor(np.load("Xts.npy"))
+            self.Ys = torch.tensor(np.load("Yts.npy"))
+
+    def __len__(self):
+        return len(self.Xs)
+
+    def __getitem__(self, i):
+        return self.Xs[i], self.Ys[i]
 
 
 class CIFAR(Dataset):
-    def __init__(self):
+    def __init__(self, train=True):
         super().__init__()
         self.path = "datasets/CIFAR"
+        self.T = None
+        if train:
+            self.Xs = torch.tensor(np.load("Xtr.npy"))
+            self.Ys = torch.tensor(np.load("Str.npy"))
+        else:
+            self.Xs = torch.tensor(np.load("Xts.npy"))
+            self.Ys = torch.tensor(np.load("Yts.npy"))
+
+    def __len__(self):
+        return len(self.Xs)
+
+    def __getitem__(self, i):
+        return self.Xs[i], self.Ys[i]
 
 
 if __name__ == "__main__":
