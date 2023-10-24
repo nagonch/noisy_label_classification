@@ -7,7 +7,7 @@ import torch.nn.functional as F
 class ResnetPretrained(nn.Module):
     def __init__(self, input_channels, out_classes):
         super().__init__()
-        self.in_layer = nn.Linear(input_channels, 3)
+        self.in_layer = nn.Conv2d(input_channels, 3, 3)
         self.resnet = resnet50(weights=ResNet50_Weights.DEFAULT)
         self.out_layer = nn.Linear(1000, out_classes)
 
@@ -21,3 +21,6 @@ class ResnetPretrained(nn.Module):
 
 if __name__ == "__main__":
     pass
+    # model = ResnetPretrained(1, 3)
+    # x = torch.rand(2, 1, 35, 35)
+    # print(model(x).shape)
