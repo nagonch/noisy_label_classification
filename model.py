@@ -13,7 +13,7 @@ class ResnetPretrained(nn.Module):
     def forward(self, x):
         x = F.relu(self.in_layer(x))
         x = F.relu(self.resnet(x))
-        x = F.relu(self.out_layer(x))
+        x = self.out_layer(x)
 
         return x
 
