@@ -15,7 +15,7 @@ def train(
     train_dataloader,
     n_epochs,
     transition_matrix,
-    forward_correction=True,
+    forward_correction,
 ):
     inv_transition = torch.linalg.inv(transition_matrix).to(device)
     criterion = nn.CrossEntropyLoss()
@@ -32,7 +32,8 @@ def train(
             loss = criterion(probabilities, y)
             loss.backward()
             optimizer.step()
-        print(f"Epoch [{epoch + 1}/100], Loss: {loss.item()}")
+        print(f"Epoch [{epoch + 1}/{n_epochs}], Loss: {loss.item()}")
+        torch.save(model.state_dict(), "fashionmnist6_naive.pth")
     return model
 
 
@@ -40,4 +41,4 @@ if __name__ == "__main__":
     dataset = FashionMNIST5()
     training_data = DataLoader(dataset, batch_size=100, shuffle=True)
     model = ResnetPretrained(1, 3).to(device)
-    train(model, training_data, 100, dataset.T)
+    train(model, training_data, 100, dataset.T, False)
