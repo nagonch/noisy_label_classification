@@ -13,6 +13,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def train(
     model,
+    exp_name,
     train_dataloader,
     n_epochs,
     transition_matrix,
@@ -38,11 +39,13 @@ def train(
             optimizer.step()
         print(f"Epoch [{epoch + 1}/{n_epochs}], Loss: {loss.item()}")
         if save_model:
-            torch.save(model.state_dict(), "CIFAR_naive.pth")
+            torch.save(model.state_dict(), f"{exp_name}.pth")
     return model
 
 
-def run(dataset_name, n_epochs, batch_size, lr=1e-4, save_model=False):
+def run(
+    dataset_name, exp_name, n_epochs, batch_size, lr=1e-4, save_model=False
+):
     dataset_name_to_object = {
         "CIFAR": CIFAR,
         "FashionMNIST5": FashionMNIST5,
@@ -53,6 +56,7 @@ def run(dataset_name, n_epochs, batch_size, lr=1e-4, save_model=False):
     model = ResnetPretrained(dataset[0][0].shape[0], 3).to(device)
     train(
         model,
+        exp_name,
         training_data,
         n_epochs,
         dataset.T,
@@ -65,6 +69,9 @@ def run(dataset_name, n_epochs, batch_size, lr=1e-4, save_model=False):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-dataset-name", type=str, help="Name of the dataset")
+    parser.add_argument(
+        "-exp-name", type=str, help="Experiment name to save the model"
+    )
     parser.add_argument(
         "--epochs", type=int, default=100, help="Number of epochs"
     )
@@ -81,6 +88,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     run(
         args.dataset_name,
+        args.exp_name,
         args.epochs,
         args.batch_size,
         lr=args.learning_rate,
