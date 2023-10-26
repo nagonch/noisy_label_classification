@@ -23,7 +23,7 @@ def train(
 
     model.train()
 
-    for epoch in tqdm(range(n_epochs)):
+    for _ in tqdm(range(n_epochs)):
         for X, y in train_dataloader:
             optimizer.zero_grad()
             output_probabilities = model(X)
