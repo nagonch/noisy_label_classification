@@ -18,7 +18,7 @@ def train(
     n_epochs,
     transition_matrix,
     forward_correction,
-    lr=1e-4,
+    lr=1e-2,
     save_model=True,
 ):
     if forward_correction and transition_matrix is not None:
@@ -44,7 +44,7 @@ def train(
 
 
 def run(
-    dataset_name, exp_name, n_epochs, batch_size, lr=1e-4, save_model=False
+    dataset_name, exp_name, n_epochs, batch_size, lr=1e-2, save_model=False
 ):
     dataset_name_to_object = {
         "CIFAR": CIFAR,
@@ -53,7 +53,7 @@ def run(
     }
     dataset = dataset_name_to_object[dataset_name]()
     training_data = DataLoader(dataset, batch_size=batch_size, shuffle=True)
-    model = FCN(dataset[0][0].shape[0]).to(device)
+    model = FCN(dataset[0][0].shape[0], 3).to(device)
     train(
         model,
         exp_name,

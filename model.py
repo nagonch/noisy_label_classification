@@ -20,6 +20,7 @@ import torch.nn.functional as F
 
 class FCN(nn.Module):
     def __init__(self, in_features, n_classes, hidden_size=128):
+        super().__init__()
         self.linear_in = nn.Linear(
             in_features,
             hidden_size,
@@ -40,7 +41,7 @@ class FCN(nn.Module):
         x = F.dropout(F.relu(self.hidden_2(x)))
         x = self.out(x)
 
-        return F.log_softmax(x)
+        return x
 
 
 if __name__ == "__main__":

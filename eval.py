@@ -1,6 +1,6 @@
 import torch
 from data import FashionMNIST5, FashionMNIST6, CIFAR
-from model import ResnetPretrained
+from model import FCN
 from torch.utils.data import DataLoader
 from torcheval.metrics.classification import (
     MulticlassRecall,
@@ -19,7 +19,7 @@ def eval(model_path, dataset_name):
         "FashionMNIST6": FashionMNIST6,
     }
     dataset = dataset_name_to_object[dataset_name](train=False)
-    model = ResnetPretrained(dataset[0][0].shape[0], 3).to(device)
+    model = FCN(dataset[0][0].shape[0], 3).to(device)
     model.load_state_dict(torch.load(model_path))
     model.eval()
     test_data = DataLoader(dataset, batch_size=100, shuffle=False)
