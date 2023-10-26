@@ -17,11 +17,12 @@ def train(
     train_dataloader,
     n_epochs,
     transition_matrix,
-    forward_correction,
+    forward_correction=True,
     lr=1e-2,
     save_model=True,
+    eps=1e-9,
 ):
-    if forward_correction and transition_matrix is not None:
+    if forward_correction and (transition_matrix is not None):
         inv_transition = torch.linalg.inv(transition_matrix).to(device)
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adagrad(model.parameters(), lr=lr, lr_decay=1e-6)
@@ -30,11 +31,17 @@ def train(
     for epoch in range(n_epochs):
         for X, y in tqdm(train_dataloader, leave=False):
             optimizer.zero_grad()
-            outputs = model(X)
+            output_probabilities = model(X)
             if forward_correction:
-                outputs = torch.nn.functional.softmax(outputs, dim=1)
-                outputs = (inv_transition @ outputs.T).T
-            loss = criterion(outputs, y)
+                loss_per_label = -torch.log(output_probabilities + eps)
+                loss_per_label = (inv_transition @ loss_per_label.T).T
+                loss = (
+                    torch.gather(loss_per_label, -1, y.unsqueeze(-1))
+                    .reshape(-1)
+                    .mean()
+                )
+            else:
+                loss = criterion(output_probabilities, y)
             loss.backward()
             optimizer.step()
         print(f"Epoch [{epoch + 1}/{n_epochs}], Loss: {loss.item()}")
@@ -60,7 +67,7 @@ def run(
         training_data,
         n_epochs,
         dataset.T,
-        False,
+        forward_correction=True,
         lr=lr,
         save_model=save_model,
     )

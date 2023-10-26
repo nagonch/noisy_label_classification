@@ -41,7 +41,7 @@ class FCN(nn.Module):
         x = F.dropout(F.relu(self.hidden_2(x)))
         x = self.out(x)
 
-        return x
+        return F.softmax(x, dim=1)
 
 
 if __name__ == "__main__":
