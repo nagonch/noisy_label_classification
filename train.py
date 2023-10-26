@@ -5,7 +5,7 @@ from model import FCN
 from tqdm import tqdm
 from data import CIFAR, FashionMNIST5, FashionMNIST6
 import argparse
-
+import os
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -23,8 +23,8 @@ def train(
 
     model.train()
 
-    for epoch in range(n_epochs):
-        for X, y in tqdm(train_dataloader, leave=False):
+    for epoch in tqdm(range(n_epochs)):
+        for X, y in train_dataloader:
             optimizer.zero_grad()
             output_probabilities = model(X)
             loss_per_label = -torch.log(output_probabilities + eps)
@@ -37,7 +37,6 @@ def train(
             )
             loss.backward()
             optimizer.step()
-        print(f"Epoch [{epoch + 1}/{n_epochs}], Loss: {loss.item()}")
     return model
 
 
@@ -72,7 +71,8 @@ def run(
 
     models = []
 
-    for _ in range(n_splits):
+    for i in range(n_splits):
+        print(f"Training model {i}:")
         train_dataset, val_dataset = random_split(
             dataset, [train_size, val_size]
         )
@@ -107,10 +107,13 @@ def run(
         models.append([model, torch.mean(torch.tensor(losses))])
     models = sorted(models, key=lambda x: x[-1])
     if save_model:
+        if not os.path.exists("model_weghts"):
+            os.mkdir("model_weghts")
         for i, (model, loss_val) in enumerate(models):
             print(f"top {i} validation loss value: {loss_val}")
             torch.save(
-                model.state_dict(), f"{exp_name}_top_{str(i).zfill(2)}.pth"
+                model.state_dict(),
+                f"model_weghts/{exp_name}_top_{str(i).zfill(2)}.pth",
             )
     return models
 
