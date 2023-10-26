@@ -18,7 +18,6 @@ def eval(model_path, dataset_name):
         "FashionMNIST6": FashionMNIST6,
     }
     dataset = dataset_name_to_object[dataset_name](train=False)
-    inv_transition = torch.linalg.inv(dataset.T)
     model = ResnetPretrained(dataset[0][0].shape[0], 3).to(device)
     model.load_state_dict(torch.load(model_path))
     model.eval()
@@ -27,9 +26,6 @@ def eval(model_path, dataset_name):
     y_gt = []
     for X, y in test_data:
         outputs = model(X)
-        print(inv_transition)
-        outputs = torch.nn.functional.softmax(outputs, dim=1)
-        outputs = (inv_transition @ outputs.T).T
         y_preds.append(outputs.argmax(axis=1))
         y_gt.append(y)
     y_preds = torch.cat(y_preds)
@@ -52,6 +48,6 @@ def eval(model_path, dataset_name):
 
 
 if __name__ == "__main__":
-    # print(eval("weights/FashionMNIST5_naive.pth", "FashionMNIST5"))
-    print(eval("weights/FashionMNIST6_naive.pth", "FashionMNIST6"))
+    print(eval("weights/FashionMNIST5_naive.pth", "FashionMNIST5"))
+    # print(eval("weights/FashionMNIST6_naive.pth", "FashionMNIST6"))
     # print(eval("weights/CIFAR_naive.pth", "CIFAR"))
