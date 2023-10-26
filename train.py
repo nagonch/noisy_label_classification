@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
-from model import ResnetPretrained
+from model import FCN
 from tqdm import tqdm
 from data import CIFAR, FashionMNIST5, FashionMNIST6
 import argparse
@@ -24,7 +24,7 @@ def train(
     if forward_correction and transition_matrix is not None:
         inv_transition = torch.linalg.inv(transition_matrix).to(device)
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=lr)
+    optimizer = optim.Adagrad(model.parameters(), lr=lr, lr_decay=1e-6)
     model.train()
 
     for epoch in range(n_epochs):
@@ -53,7 +53,7 @@ def run(
     }
     dataset = dataset_name_to_object[dataset_name]()
     training_data = DataLoader(dataset, batch_size=batch_size, shuffle=True)
-    model = ResnetPretrained(dataset[0][0].shape[0], 3).to(device)
+    model = FCN(dataset[0][0].shape[0]).to(device)
     train(
         model,
         exp_name,
@@ -73,13 +73,13 @@ if __name__ == "__main__":
         "-exp-name", type=str, help="Experiment name to save the model"
     )
     parser.add_argument(
-        "--epochs", type=int, default=100, help="Number of epochs"
+        "--epochs", type=int, default=40, help="Number of epochs"
     )
     parser.add_argument(
-        "--batch-size", type=int, default=100, help="Batch size"
+        "--batch-size", type=int, default=128, help="Batch size"
     )
     parser.add_argument(
-        "--learning-rate", type=float, default=1e-4, help="Learning rate"
+        "--learning-rate", type=float, default=1e-2, help="Learning rate"
     )
     parser.add_argument(
         "--save-model", action="store_true", help="Save the model"
