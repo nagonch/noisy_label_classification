@@ -30,15 +30,15 @@ def train(
         for X, y in tqdm(train_dataloader, leave=False):
             optimizer.zero_grad()
             outputs = model(X)
-            probabilities = torch.nn.functional.softmax(outputs, dim=1)
             if forward_correction:
-                probabilities = (inv_transition @ probabilities.T).T
-            loss = criterion(probabilities, y)
+                outputs = torch.nn.functional.softmax(outputs, dim=1)
+                outputs = (inv_transition @ outputs.T).T
+            loss = criterion(outputs, y)
             loss.backward()
             optimizer.step()
         print(f"Epoch [{epoch + 1}/{n_epochs}], Loss: {loss.item()}")
         if save_model:
-            torch.save(model.state_dict(), "FashionMNIST5_naive.pth")
+            torch.save(model.state_dict(), "CIFAR_naive.pth")
     return model
 
 

@@ -29,7 +29,7 @@ class FashionMNIST5(Dataset):
         super().__init__("datasets/FashionMNIST0.5", train)
         self.T = torch.tensor(
             [[0.5, 0.2, 0.3], [0.3, 0.5, 0.2], [0.2, 0.3, 0.5]]
-        )
+        ).to(device)
 
     def __getitem__(self, i):
         return self.Xs[i][None], self.Ys[i]
@@ -41,7 +41,7 @@ class FashionMNIST6(Dataset):
         self.path = "datasets/FashionMNIST0.6"
         self.T = torch.tensor(
             [[0.4, 0.3, 0.3], [0.3, 0.4, 0.3], [0.3, 0.3, 0.4]]
-        )
+        ).to(device)
 
     def __getitem__(self, i):
         return self.Xs[i][None], self.Ys[i]
