@@ -16,7 +16,7 @@ class Dataset(TorchDataset):
         else:
             self.Xs = torch.tensor(np.load(f"{self.path}/Xts.npy"))
             self.Ys = torch.tensor(np.load(f"{self.path}/Yts.npy"))
-        self.Xs = self.Xs.float() / self.Xs.max()
+        self.Xs = self.Xs.float()
         self.Xs = self.Xs.to(device)
         self.Ys = self.Ys.to(device)
 

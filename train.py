@@ -38,7 +38,7 @@ def train(
             optimizer.step()
         print(f"Epoch [{epoch + 1}/{n_epochs}], Loss: {loss.item()}")
         if save_model:
-            torch.save(model.state_dict(), "CIFAR_naive.pth")
+            torch.save(model.state_dict(), "FashionMNIST5_naive.pth")
     return model
 
 
