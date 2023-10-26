@@ -7,6 +7,7 @@ from torcheval.metrics.classification import (
     MulticlassPrecision,
 )
 from torcheval.metrics import MulticlassF1Score
+import argparse
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -48,6 +49,11 @@ def eval(model_path, dataset_name):
 
 
 if __name__ == "__main__":
-    print(eval("weights/FashionMNIST5_naive.pth", "FashionMNIST5"))
-    # print(eval("weights/FashionMNIST6_naive.pth", "FashionMNIST6"))
-    # print(eval("weights/CIFAR_naive.pth", "CIFAR"))
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-model-path", type=str, help="Path to the evaluated model"
+    )
+    parser.add_argument("-dataset-name", type=str, help="Name of the dataset")
+    args = parser.parse_args()
+
+    print(eval(args.model_path, args.dataset_name))
