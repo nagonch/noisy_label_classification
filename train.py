@@ -17,13 +17,16 @@ def train(
     train_dataloader,
     n_epochs,
     transition_matrix,
-    forward_correction=True,
+    backward_correction=True,
     lr=1e-2,
     save_model=True,
     eps=1e-9,
 ):
-    if forward_correction and (transition_matrix is not None):
+    if backward_correction and (transition_matrix is not None):
         inv_transition = torch.linalg.inv(transition_matrix).to(device)
+    elif backward_correction and not (transition_matrix is not None):
+        raise RuntimeError("No transition matrix for backward correction")
+
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adagrad(model.parameters(), lr=lr, lr_decay=1e-6)
     model.train()
@@ -32,7 +35,7 @@ def train(
         for X, y in tqdm(train_dataloader, leave=False):
             optimizer.zero_grad()
             output_probabilities = model(X)
-            if forward_correction:
+            if backward_correction:
                 loss_per_label = -torch.log(output_probabilities + eps)
                 loss_per_label = (inv_transition @ loss_per_label.T).T
                 loss = (
@@ -67,7 +70,7 @@ def run(
         training_data,
         n_epochs,
         dataset.T,
-        forward_correction=True,
+        backward_correction=True,
         lr=lr,
         save_model=save_model,
     )
