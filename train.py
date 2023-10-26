@@ -14,17 +14,21 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 def train(
     model,
     exp_name,
+    training_method,
     train_dataloader,
     n_epochs,
     transition_matrix,
-    backward_correction=True,
     lr=1e-2,
     save_model=True,
     eps=1e-9,
 ):
-    if backward_correction and (transition_matrix is not None):
+    if training_method == "backward_correction" and (
+        transition_matrix is not None
+    ):
         inv_transition = torch.linalg.inv(transition_matrix).to(device)
-    elif backward_correction and not (transition_matrix is not None):
+    elif training_method == "backward_correction" and not (
+        transition_matrix is not None
+    ):
         raise RuntimeError("No transition matrix for backward correction")
 
     criterion = nn.CrossEntropyLoss()
@@ -35,7 +39,7 @@ def train(
         for X, y in tqdm(train_dataloader, leave=False):
             optimizer.zero_grad()
             output_probabilities = model(X)
-            if backward_correction:
+            if training_method == "backward_correction":
                 loss_per_label = -torch.log(output_probabilities + eps)
                 loss_per_label = (inv_transition @ loss_per_label.T).T
                 loss = (
@@ -54,7 +58,13 @@ def train(
 
 
 def run(
-    dataset_name, exp_name, n_epochs, batch_size, lr=1e-2, save_model=False
+    dataset_name,
+    exp_name,
+    n_epochs,
+    batch_size,
+    training_method,
+    lr=1e-2,
+    save_model=False,
 ):
     dataset_name_to_object = {
         "CIFAR": CIFAR,
@@ -67,10 +77,10 @@ def run(
     train(
         model,
         exp_name,
+        training_method,
         training_data,
         n_epochs,
         dataset.T,
-        backward_correction=True,
         lr=lr,
         save_model=save_model,
     )
@@ -89,6 +99,15 @@ if __name__ == "__main__":
         "--batch-size", type=int, default=128, help="Batch size"
     )
     parser.add_argument(
+        "--training-method",
+        choices=[
+            "backward_correction",
+        ],
+        default="backward_correction",
+        type=str,
+        help="Name of the dataset",
+    )
+    parser.add_argument(
         "--learning-rate", type=float, default=1e-2, help="Learning rate"
     )
     parser.add_argument(
@@ -101,6 +120,7 @@ if __name__ == "__main__":
         args.exp_name,
         args.epochs,
         args.batch_size,
+        args.training_method,
         lr=args.learning_rate,
         save_model=args.save_model,
     )
