@@ -1,5 +1,6 @@
 datasets
 trained_model
+model_weights
 venv
 .ipynb_checkpoints
 *.ipynb
