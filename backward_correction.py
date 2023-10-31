@@ -10,9 +10,8 @@ import os
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-def train(
+def train_backward_correction(
     model,
-    training_method,
     train_dataloader,
     n_epochs,
     inv_transition,
@@ -28,8 +27,7 @@ def train(
             optimizer.zero_grad()
             output_probabilities = model(X)
             loss_per_label = -torch.log(output_probabilities + eps)
-            if training_method == "backward_correction":
-                loss_per_label = (inv_transition @ loss_per_label.T).T
+            loss_per_label = (inv_transition @ loss_per_label.T).T
             loss = (
                 torch.gather(loss_per_label, -1, y.unsqueeze(-1))
                 .reshape(-1)
@@ -40,12 +38,11 @@ def train(
     return model
 
 
-def run(
+def run_backward_correction(
     dataset_name,
     exp_name,
     n_epochs,
     batch_size,
-    training_method,
     lr=1e-2,
     save_model=False,
     n_splits=10,
@@ -57,11 +54,8 @@ def run(
         "FashionMNIST6": FashionMNIST6,
     }
     dataset = dataset_name_to_object[dataset_name]()
-    if training_method == "backward_correction" and (dataset.T is not None):
-        inv_transition = torch.linalg.inv(dataset.T).to(device)
-    elif training_method == "backward_correction" and not (
-        dataset.T is not None
-    ):
+    inv_transition = torch.linalg.inv(dataset.T).to(device)
+    if dataset.T is None:
         raise RuntimeError("No transition matrix for backward correction")
 
     dataset_size = len(dataset)
@@ -83,9 +77,8 @@ def run(
 
         model = FCN(dataset[0][0].shape[0], 3).to(device)
         model.train()
-        model = train(
+        model = train_backward_correction(
             model,
-            training_method,
             training_data,
             n_epochs,
             inv_transition,
@@ -96,8 +89,7 @@ def run(
         for X, y in val_data:
             output_probabilities = model(X)
             loss_per_label = -torch.log(output_probabilities + eps)
-            if training_method == "backward_correction":
-                loss_per_label = (inv_transition @ loss_per_label.T).T
+            loss_per_label = (inv_transition @ loss_per_label.T).T
             loss = (
                 torch.gather(loss_per_label, -1, y.unsqueeze(-1))
                 .reshape(-1)
@@ -131,15 +123,6 @@ if __name__ == "__main__":
         "--batch-size", type=int, default=128, help="Batch size"
     )
     parser.add_argument(
-        "--training-method",
-        choices=[
-            "backward_correction",
-        ],
-        default="backward_correction",
-        type=str,
-        help="Name of the dataset",
-    )
-    parser.add_argument(
         "--learning-rate", type=float, default=1e-2, help="Learning rate"
     )
     parser.add_argument(
@@ -147,12 +130,11 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-    run(
+    run_backward_correction(
         args.dataset_name,
         args.exp_name,
         args.epochs,
         args.batch_size,
-        args.training_method,
         lr=args.learning_rate,
         save_model=args.save_model,
     )
