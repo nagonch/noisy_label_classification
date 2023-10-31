@@ -21,9 +21,12 @@ def train_co_teaching(
     transition_matrix,
     lr=1e-2,
 ):
-    tau = 1 - torch.mean(torch.diagonal(transition_matrix))
+    if transition_matrix is None:
+        tau = 0.95
+    else:
+        tau = 1 - torch.prod(torch.diagonal(transition_matrix))
     R = 1
-    epoch_k = 10
+    epoch_k = 11
     optimizer = optim.Adam(
         chain(model_f.parameters(), model_g.parameters()), lr=lr
     )
@@ -39,24 +42,28 @@ def train_co_teaching(
             losses_f = F.cross_entropy(f_pred, y, reduction="none")
             losses_g = F.cross_entropy(g_pred, y, reduction="none")
 
-            loss_f = losses_f[torch.argsort(losses_f)][
-                : int(losses_f.shape[0] * R)
-            ].mean()
-            loss_g = losses_g[torch.argsort(losses_g)][
-                : int(losses_g.shape[0] * R)
-            ].mean()
+            _, model_f_sm_idx = torch.topk(losses_f, k=int(int(losses_f.size(0)) * R), largest=False)
+            _, model_g_sm_idx = torch.topk(losses_g, k=int(int(losses_g.size(0)) * R), largest=False)
+
+            # co-teaching
+            model_f_loss_filter = torch.zeros((losses_f.size(0))).cuda()
+            model_f_loss_filter[model_g_sm_idx] = 1.0
+            losses_f = (model_f_loss_filter * losses_f).mean()
+
+            model_g_loss_filter = torch.zeros((losses_g.size(0))).cuda()
+            model_g_loss_filter[model_f_sm_idx] = 1.0
+            losses_g = (model_g_loss_filter * losses_g).mean()
 
             optimizer.zero_grad()
-            loss_f.backward()
+            losses_f.backward()
             torch.nn.utils.clip_grad_norm_(model_f.parameters(), 5.0)
             optimizer.step()
 
             optimizer.zero_grad()
-            loss_g.backward()
+            losses_g.backward()
             torch.nn.utils.clip_grad_norm_(model_g.parameters(), 5.0)
             optimizer.step()
-
-        R = 1 - min(epoch / epoch_k * tau, tau)
+        R = 1 - tau * min(epoch / epoch_k, 1)
 
     return model_f
 
@@ -68,7 +75,7 @@ def run_co_teaching(
     batch_size,
     lr=1e-2,
     save_model=False,
-    n_splits=10,
+    n_splits=1,
 ):
     dataset_name_to_object = {
         "CIFAR": CIFAR,
@@ -76,8 +83,6 @@ def run_co_teaching(
         "FashionMNIST6": FashionMNIST6,
     }
     dataset = dataset_name_to_object[dataset_name]()
-    if dataset.T is None:
-        raise RuntimeError("No transition matrix for backward correction")
 
     dataset_size = len(dataset)
     train_ratio = 0.8
@@ -140,10 +145,10 @@ if __name__ == "__main__":
         "--epochs", type=int, default=40, help="Number of epochs"
     )
     parser.add_argument(
-        "--batch-size", type=int, default=128, help="Batch size"
+        "--batch-size", type=int, default=40, help="Batch size"
     )
     parser.add_argument(
-        "--learning-rate", type=float, default=1e-2, help="Learning rate"
+        "--learning-rate", type=float, default=1e-4, help="Learning rate"
     )
     parser.add_argument(
         "--save-model", action="store_true", help="Save the model"
