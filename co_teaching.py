@@ -22,9 +22,9 @@ def train_co_teaching(
     lr=1e-2,
 ):
     if transition_matrix is None:
-        tau = 0.95
+        tau = 0.5
     else:
-        tau = 1 - torch.prod(torch.diagonal(transition_matrix))
+        tau = torch.mean(torch.diagonal(transition_matrix))
     R = 1
     epoch_k = 11
     optimizer = optim.Adam(
@@ -142,13 +142,13 @@ if __name__ == "__main__":
         "-exp-name", type=str, help="Experiment name to save the model"
     )
     parser.add_argument(
-        "--epochs", type=int, default=40, help="Number of epochs"
+        "--epochs", type=int, default=200, help="Number of epochs"
     )
     parser.add_argument(
-        "--batch-size", type=int, default=40, help="Batch size"
+        "--batch-size", type=int, default=128, help="Batch size"
     )
     parser.add_argument(
-        "--learning-rate", type=float, default=1e-4, help="Learning rate"
+        "--learning-rate", type=float, default=1e-3, help="Learning rate"
     )
     parser.add_argument(
         "--save-model", action="store_true", help="Save the model"
