@@ -32,15 +32,15 @@ def eval(model_path, dataset_name):
     y_preds = torch.cat(y_preds)
     y_gt = torch.cat(y_gt)
 
-    recall = MulticlassRecall(num_classes=3)
+    recall = MulticlassRecall(num_classes=3, average="macro")
     recall.update(y_preds, y_gt)
     print(f"recall: {recall.compute()}")
 
-    precision = MulticlassPrecision(num_classes=3)
+    precision = MulticlassPrecision(num_classes=3, average="macro")
     precision.update(y_preds, y_gt)
     print(f"precision: {precision.compute()}")
 
-    f1 = MulticlassF1Score(num_classes=3)
+    f1 = MulticlassF1Score(num_classes=3, average="macro")
     f1.update(y_preds, y_gt)
     print(f"f1: {f1.compute()}")
 
