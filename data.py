@@ -51,13 +51,7 @@ class FashionMNIST6(Dataset):
 class CIFAR(Dataset):
     def __init__(self, train=True):
         super().__init__("datasets/CIFAR", train)
-        self.T = torch.tensor(
-            [
-                [0.4394, 0.3218, 0.2388],
-                [0.3411, 0.4033, 0.2556],
-                [0.3179, 0.3207, 0.3614],
-            ]
-        )
+        self.T = None
 
     def __getitem__(self, i):
         return self.Xs[i].reshape(-1), self.Ys[i]
