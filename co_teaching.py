@@ -3,7 +3,7 @@ from torch import optim
 import torch.nn.functional as F
 from torch.utils.data import DataLoader, random_split
 from itertools import chain
-from model import FCN
+from model import FCN, LeNet
 from data import CIFAR, FashionMNIST5, FashionMNIST6
 import os
 import argparse
@@ -101,10 +101,14 @@ def run_co_teaching(
         )
         val_data = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
 
-        model_f = FCN(dataset[0][0].shape[0], 3).to(device)
-        model_f.train()
+        if dataset_name == "CIFAR":
+            model_f = LeNet(3,).to(device)
+            model_g = LeNet(3,).to(device)
+        else: 
+            model_f = FCN(dataset[0][0].shape[0], 3).to(device)
+            model_g = FCN(dataset[0][0].shape[0], 3).to(device)
 
-        model_g = FCN(dataset[0][0].shape[0], 3).to(device)
+        model_f.train()
         model_g.train()
 
         model = train_co_teaching(
@@ -148,7 +152,7 @@ if __name__ == "__main__":
         "--batch-size", type=int, default=128, help="Batch size"
     )
     parser.add_argument(
-        "--learning-rate", type=float, default=1e-3, help="Learning rate"
+        "--learning-rate", type=float, default=5e-4, help="Learning rate"
     )
     parser.add_argument(
         "--save-model", action="store_true", help="Save the model"

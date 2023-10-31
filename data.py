@@ -54,15 +54,15 @@ class CIFAR(Dataset):
         self.T = None
 
     def __getitem__(self, i):
-        return self.Xs[i].reshape(-1), self.Ys[i]
+        return torch.permute(self.Xs[i], (2, 0, 1)), self.Ys[i]
 
 
 if __name__ == "__main__":
     pass
     # from matplotlib import pyplot as plt
 
-    # one = CIFAR()
-    # print(one[0][0].shape)
+    one = CIFAR()
+    print(one[0][0].shape)
     # for i in range(len(one)):
     #     plt.imshow(one[i][0], cmap="gray")
     #     plt.show()
