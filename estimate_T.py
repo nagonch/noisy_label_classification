@@ -12,12 +12,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 def train(model, train_dataloader, n_epochs, lr=0.01):
-    optimizer = optim.SGD(
-        model.parameters(),
-        lr=lr,
-        momentum=0.9,
-        weight_decay=1e-5,
-    )
+    optimizer = optim.Adagrad(model.parameters(), lr=lr, lr_decay=1e-6)
 
     model.train()
 
@@ -54,12 +49,11 @@ def val(
 if __name__ == "__main__":
     # GLOBALS -------------------
     dataset_name = "FashionMNIST5"
-    train_frac = 0.5
+    train_frac = 0.75
     val_frac = 0.25
-    estimation_frac = 0.25
     train_batch_size = 128
-    k_splits = 10
-    n_epochs = 30
+    k_splits = 3
+    n_epochs = 100
     lr = 1e-2
     # ---------------------------
 
@@ -71,14 +65,9 @@ if __name__ == "__main__":
     dataset = dataset_name_to_object[dataset_name]()
     train_size = int(len(dataset) * train_frac)
     val_size = int(len(dataset) * val_frac)
-    estimation_size = int(len(dataset) * estimation_frac)
-
-    train_val_data, estimation_data = random_split(
-        dataset, [train_size + val_size, estimation_size]
-    )
 
     estimation_dataloader = DataLoader(
-        estimation_data, batch_size=estimation_size, shuffle=True
+        dataset, batch_size=len(dataset), shuffle=True
     )
 
     models = []
@@ -97,7 +86,7 @@ if __name__ == "__main__":
             ).to(device)
 
         train_data, val_data = random_split(
-            train_val_data,
+            dataset,
             [train_size, val_size],
         )
 
@@ -121,30 +110,13 @@ if __name__ == "__main__":
     )
 
     model.eval()
-    probs_0 = []
-    probs_1 = []
-    probs_2 = []
-    for data, targets in estimation_dataloader:
-        with torch.no_grad():
-            P = F.softmax(model(data), dim=1)
-        probs_0.extend(P[:, 0])
-        probs_1.extend(P[:, 1])
-        probs_2.extend(P[:, 2])
-
-    probs_0 = sorted(probs_0)
-    probs_1 = sorted(probs_1)
-    probs_2 = sorted(probs_2)
-    print(probs_0[0], probs_0[-1])
-    print(probs_1[0], probs_1[-1])
-    print(probs_2[0], probs_2[-1])
-    # result_T = torch.zeros((3, 3))
-    # X = next(iter(estimation_dataloader))[0]
-    # with torch.no_grad():
-    #     P = model(X)
-    # for i in range(3):
-    #     x_best = P[torch.argmax(P[:, i]), :]
-    #     for j in range(3):
-    #         result_T[i][j] = x_best[j]
-    # print(result_T)
-    # result_T /= result_T.sum(dim=1, keepdim=True)
-    # print(result_T)
+    result_T = torch.zeros((3, 3))
+    X = next(iter(estimation_dataloader))[0]
+    with torch.no_grad():
+        P = F.softmax(model(X), dim=1)
+    for i in range(3):
+        x_best = P[torch.argmax(P[:, i]), :]
+        for j in range(3):
+            result_T[i][j] = x_best[j]
+    result_T /= result_T.sum(dim=1, keepdim=True)
+    print(result_T)
