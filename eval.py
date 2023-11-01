@@ -13,7 +13,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 @torch.no_grad()
-def accuracy(result, answer, topk=1):
+def topk_accuracy(result, answer, topk=1):
     # Source: https://gist.github.com/weiaicunzai/2a5ae6eac6712c70bde0630f3e76b77b
     r"""
     result (batch_size, class_cnt)

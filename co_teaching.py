@@ -42,8 +42,12 @@ def train_co_teaching(
             losses_f = F.cross_entropy(f_pred, y, reduction="none")
             losses_g = F.cross_entropy(g_pred, y, reduction="none")
 
-            _, model_f_sm_idx = torch.topk(losses_f, k=int(int(losses_f.size(0)) * R), largest=False)
-            _, model_g_sm_idx = torch.topk(losses_g, k=int(int(losses_g.size(0)) * R), largest=False)
+            _, model_f_sm_idx = torch.topk(
+                losses_f, k=int(int(losses_f.size(0)) * R), largest=False
+            )
+            _, model_g_sm_idx = torch.topk(
+                losses_g, k=int(int(losses_g.size(0)) * R), largest=False
+            )
 
             # co-teaching
             model_f_loss_filter = torch.zeros((losses_f.size(0))).cuda()
@@ -102,9 +106,13 @@ def run_co_teaching(
         val_data = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
 
         if dataset_name == "CIFAR":
-            model_f = LeNet(3,).to(device)
-            model_g = LeNet(3,).to(device)
-        else: 
+            model_f = LeNet(
+                3,
+            ).to(device)
+            model_g = LeNet(
+                3,
+            ).to(device)
+        else:
             model_f = FCN(dataset[0][0].shape[0], 3).to(device)
             model_g = FCN(dataset[0][0].shape[0], 3).to(device)
 
