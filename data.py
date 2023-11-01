@@ -51,7 +51,14 @@ class FashionMNIST6(Dataset):
 class CIFAR(Dataset):
     def __init__(self, train=True):
         super().__init__("datasets/CIFAR", train)
-        self.T = None
+        self.T = torch.eye(3)
+        # self.T = torch.tensor(
+        #     [
+        #         [0.6229, 0.2322, 0.1449],
+        #         [0.2198, 0.6193, 0.1609],
+        #         [0.1304, 0.2117, 0.6579],
+        #     ]
+        # )
 
     def __getitem__(self, i):
         return torch.permute(self.Xs[i], (2, 0, 1)), self.Ys[i]
