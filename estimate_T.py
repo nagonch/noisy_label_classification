@@ -11,21 +11,6 @@ from eval import topk_accuracy
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-def train(model, train_dataloader, n_epochs, lr=0.01):
-    optimizer = optim.Adagrad(model.parameters(), lr=lr, lr_decay=1e-6)
-
-    model.train()
-
-    for _ in tqdm(range(n_epochs)):
-        for X, y in train_dataloader:
-            optimizer.zero_grad()
-            output_logits = model(X)
-            loss = F.cross_entropy(output_logits, y)
-            loss.backward()
-            optimizer.step()
-    return model
-
-
 def val(
     models,
     val_dataloader,
@@ -46,15 +31,46 @@ def val(
     return models_to_accs[0][0]
 
 
+def train(model, train_dataloader, val_dataloader, n_epochs, lr=0.01):
+    optimizer = optim.Adagrad(model.parameters(), lr=lr, lr_decay=1e-4)
+
+    for epoch in tqdm(range(n_epochs)):
+        model.train()
+        preds = []
+        ys = []
+        for X, y in train_dataloader:
+            ys.append(y)
+            optimizer.zero_grad()
+            output_logits = model(X)
+            preds.append(F.softmax(output_logits, dim=1))
+            loss = F.cross_entropy(output_logits, y)
+            loss.backward()
+            optimizer.step()
+        train_accuracy = topk_accuracy(torch.cat(preds), torch.cat(ys))
+        print(f"Train accuracy epoch {epoch}: {train_accuracy}, max prob: {torch.cat(preds).max()}")
+        with torch.no_grad():
+            model.eval()
+            val_preds = []
+            val_ys = []
+            for X, y in val_dataloader:
+                val_ys.append(y)
+                output_logits = model(X)
+                val_preds.append(F.softmax(output_logits, dim=1))
+            val_accuracy = topk_accuracy(torch.cat(val_preds), torch.cat(val_ys)) 
+            print(f"Val accuracy epoch {epoch}: {val_accuracy}, max prob: {torch.cat(val_preds).max()}")
+        
+    return model
+
+
 if __name__ == "__main__":
     # GLOBALS -------------------
     dataset_name = "FashionMNIST5"
     train_frac = 0.75
     val_frac = 0.25
-    train_batch_size = 128
-    k_splits = 3
-    n_epochs = 100
-    lr = 1e-2
+    train_batch_size = 1280
+    k_splits = 1
+    n_epochs = 1000
+    lr = 1e-3
     # ---------------------------
 
     dataset_name_to_object = {
@@ -65,10 +81,6 @@ if __name__ == "__main__":
     dataset = dataset_name_to_object[dataset_name]()
     train_size = int(len(dataset) * train_frac)
     val_size = int(len(dataset) * val_frac)
-
-    estimation_dataloader = DataLoader(
-        dataset, batch_size=len(dataset), shuffle=True
-    )
 
     models = []
 
@@ -99,6 +111,7 @@ if __name__ == "__main__":
         model = train(
             model,
             train_dataloader=training_dataloader,
+            val_dataloader=val_dataloader,
             n_epochs=n_epochs,
             lr=lr,
         )
@@ -107,6 +120,10 @@ if __name__ == "__main__":
     model = val(
         models,
         val_dataloader,
+    )
+
+    estimation_dataloader = DataLoader(
+        train_data, batch_size=train_size, shuffle=True
     )
 
     model.eval()
