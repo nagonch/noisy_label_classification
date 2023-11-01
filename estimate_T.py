@@ -32,7 +32,8 @@ def val(
 
 
 def train(model, train_dataloader, val_dataloader, n_epochs, lr=0.01):
-    optimizer = optim.Adagrad(model.parameters(), lr=lr, lr_decay=1e-4)
+    optimizer = optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=1e-5)
+    scheduler = optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.95)
 
     for epoch in tqdm(range(n_epochs)):
         model.train()
@@ -58,18 +59,20 @@ def train(model, train_dataloader, val_dataloader, n_epochs, lr=0.01):
                 val_preds.append(F.softmax(output_logits, dim=1))
             val_accuracy = topk_accuracy(torch.cat(val_preds), torch.cat(val_ys)) 
             print(f"Val accuracy epoch {epoch}: {val_accuracy}, max prob: {torch.cat(val_preds).max()}")
+        print(loss)
+        scheduler.step()
         
     return model
 
 
 if __name__ == "__main__":
     # GLOBALS -------------------
-    dataset_name = "FashionMNIST5"
+    dataset_name = "CIFAR"
     train_frac = 0.75
     val_frac = 0.25
-    train_batch_size = 1280
+    train_batch_size = 128
     k_splits = 1
-    n_epochs = 1000
+    n_epochs = 200
     lr = 1e-3
     # ---------------------------
 
@@ -103,10 +106,10 @@ if __name__ == "__main__":
         )
 
         training_dataloader = DataLoader(
-            train_data, batch_size=train_batch_size, shuffle=True
+            train_data, batch_size=train_size, shuffle=True
         )
         val_dataloader = DataLoader(
-            val_data, batch_size=train_batch_size, shuffle=True
+            val_data, batch_size=val_size, shuffle=True
         )
         model = train(
             model,
