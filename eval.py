@@ -79,7 +79,7 @@ def eval(model_path, dataset_name):
     f1.update(y_preds, y_gt)
     print(f"f1: {f1.compute()}")
 
-    top1_acc_val = accuracy(p_preds, y_gt)
+    top1_acc_val = topk_accuracy(p_preds, y_gt)
     print(f"top1 accuracy: {top1_acc_val}")
 
 
