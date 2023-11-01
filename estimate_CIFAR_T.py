@@ -32,7 +32,7 @@ def train(
 
 if __name__ == "__main__":
     train_batch_size = 128
-    T_estimating_dataset_frac = 0.1
+    T_estimating_dataset_frac = 0.5
 
     train_dataset = CIFAR()
     T_estimating_size = int(len(train_dataset) * T_estimating_dataset_frac)
