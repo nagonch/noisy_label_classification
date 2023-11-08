@@ -78,21 +78,23 @@ def eval(models_folder, dataset_name):
         recall = MulticlassRecall(num_classes=3, average="macro")
         recall.update(y_preds, y_gt)
         if i == 0:
-            print(f"Best model by val loss recall: {recall.compute()}")
+            print(f"Cross validation selected model recall: {recall.compute()}")
 
         precision = MulticlassPrecision(num_classes=3, average="macro")
         precision.update(y_preds, y_gt)
         if i == 0:
-            print(f"Best model by val loss precision: {precision.compute()}")
+            print(f"Cross validation selected model precision: {precision.compute()}")
 
         f1 = MulticlassF1Score(num_classes=3, average="macro")
         f1.update(y_preds, y_gt)
         if i == 0:
-            print(f"Best model by val loss f1: {f1.compute()}")
+            print(f"Cross validation selected model by val loss f1: {f1.compute()}")
 
         top1_acc_val = topk_accuracy(p_preds, y_gt)
         if i == 0:
-            print(f"Best model by val loss top1 accuracy: {top1_acc_val}")
+            print(
+                f"Cross validation selected model by val loss top1 accuracy: {top1_acc_val}"
+            )
 
         recalls.append(recall.compute())
         precisions.append(precision.compute())
