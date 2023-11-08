@@ -131,7 +131,6 @@ def run_co_teaching(
         if not os.path.exists("model_weights"):
             os.mkdir("model_weights")
         for i, (model, loss_val) in enumerate(models):
-            print(f"top {i} validation loss value: {loss_val}")
             torch.save(
                 model.state_dict(),
                 f"model_weights/{exp_name}_top_{str(i).zfill(2)}.pth",
