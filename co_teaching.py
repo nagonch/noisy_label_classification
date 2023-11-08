@@ -21,10 +21,7 @@ def train_co_teaching(
     transition_matrix,
     lr=1e-2,
 ):
-    if transition_matrix is None:
-        tau = 0.5
-    else:
-        tau = torch.mean(torch.diagonal(transition_matrix))
+    tau = torch.mean(torch.diagonal(transition_matrix))
     R = 1
     epoch_k = 11
     optimizer = optim.Adam(
@@ -79,7 +76,7 @@ def run_co_teaching(
     batch_size,
     lr=1e-2,
     save_model=False,
-    n_splits=1,
+    n_splits=10,
 ):
     dataset_name_to_object = {
         "CIFAR": CIFAR,
