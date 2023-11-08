@@ -61,7 +61,7 @@ def eval(models_folder, dataset_name):
     for i, model_path in enumerate(sorted(os.listdir(models_folder))):
         model.load_state_dict(torch.load(f"{models_folder}/{model_path}"))
         model.eval()
-        test_data = DataLoader(dataset, batch_size=100, shuffle=False)
+        test_data = DataLoader(dataset, batch_size=100, shuffle=True)
         y_preds = []
         p_preds = []
         y_gt = []
