@@ -32,7 +32,9 @@ def val(
 
 
 def train(model, train_dataloader, val_dataloader, n_epochs, lr=0.01):
-    optimizer = optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=1e-5)
+    optimizer = optim.SGD(
+        model.parameters(), lr=lr, momentum=0.9, weight_decay=1e-5
+    )
     scheduler = optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.95)
 
     for epoch in tqdm(range(n_epochs)):
@@ -48,7 +50,9 @@ def train(model, train_dataloader, val_dataloader, n_epochs, lr=0.01):
             loss.backward()
             optimizer.step()
         train_accuracy = topk_accuracy(torch.cat(preds), torch.cat(ys))
-        print(f"Train accuracy epoch {epoch}: {train_accuracy}, max prob: {torch.cat(preds).max()}")
+        print(
+            f"Train accuracy epoch {epoch}: {train_accuracy}, max prob: {torch.cat(preds).max()}"
+        )
         with torch.no_grad():
             model.eval()
             val_preds = []
@@ -57,22 +61,25 @@ def train(model, train_dataloader, val_dataloader, n_epochs, lr=0.01):
                 val_ys.append(y)
                 output_logits = model(X)
                 val_preds.append(F.softmax(output_logits, dim=1))
-            val_accuracy = topk_accuracy(torch.cat(val_preds), torch.cat(val_ys)) 
-            print(f"Val accuracy epoch {epoch}: {val_accuracy}, max prob: {torch.cat(val_preds).max()}")
+            val_accuracy = topk_accuracy(
+                torch.cat(val_preds), torch.cat(val_ys)
+            )
+            print(
+                f"Val accuracy epoch {epoch}: {val_accuracy}, max prob: {torch.cat(val_preds).max()}"
+            )
         print(loss)
         scheduler.step()
-        
+
     return model
 
 
 if __name__ == "__main__":
     # GLOBALS -------------------
     dataset_name = "CIFAR"
-    train_frac = 0.75
-    val_frac = 0.25
-    train_batch_size = 128
+    train_frac = 0.9
+    val_frac = 0.1
     k_splits = 1
-    n_epochs = 200
+    n_epochs = 40
     lr = 1e-3
     # ---------------------------
 

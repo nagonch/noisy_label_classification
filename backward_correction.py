@@ -45,7 +45,7 @@ def run_backward_correction(
     batch_size,
     lr=1e-2,
     save_model=False,
-    n_splits=1,
+    n_splits=10,
     eps=1e-6,
 ):
     dataset_name_to_object = {
@@ -128,7 +128,7 @@ if __name__ == "__main__":
         "--batch-size", type=int, default=128, help="Batch size"
     )
     parser.add_argument(
-        "--learning-rate", type=float, default=1e-3, help="Learning rate"
+        "--learning-rate", type=float, default=1e-2, help="Learning rate"
     )
     parser.add_argument(
         "--save-model", action="store_true", help="Save the model"

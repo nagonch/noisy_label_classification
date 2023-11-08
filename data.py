@@ -39,7 +39,6 @@ class FashionMNIST5(Dataset):
 class FashionMNIST6(Dataset):
     def __init__(self, train=True):
         super().__init__("datasets/FashionMNIST0.6", train)
-        self.path = "datasets/FashionMNIST0.6"
         self.T = torch.tensor(
             [[0.4, 0.3, 0.3], [0.3, 0.4, 0.3], [0.3, 0.3, 0.4]]
         ).to(device)
@@ -51,14 +50,13 @@ class FashionMNIST6(Dataset):
 class CIFAR(Dataset):
     def __init__(self, train=True):
         super().__init__("datasets/CIFAR", train)
-        self.T = torch.eye(3)
-        # self.T = torch.tensor(
-        #     [
-        #         [0.6229, 0.2322, 0.1449],
-        #         [0.2198, 0.6193, 0.1609],
-        #         [0.1304, 0.2117, 0.6579],
-        #     ]
-        # )
+        self.T = torch.tensor(
+            [
+                [0.37, 0.32, 0.31],
+                [0.32, 0.37, 0.32],
+                [0.31, 0.32, 0.37],
+            ]
+        )
 
     def __getitem__(self, i):
         return torch.permute(self.Xs[i], (2, 0, 1)), self.Ys[i]
@@ -66,11 +64,3 @@ class CIFAR(Dataset):
 
 if __name__ == "__main__":
     pass
-    # from matplotlib import pyplot as plt
-
-    one = CIFAR()
-    print(one[0][0].shape)
-    # for i in range(len(one)):
-    #     plt.imshow(one[i][0], cmap="gray")
-    #     plt.show()
-    #     plt.close()

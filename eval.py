@@ -59,7 +59,8 @@ def eval(model_path, dataset_name):
     p_preds = []
     y_gt = []
     for X, y in test_data:
-        outputs = model(X)
+        with torch.no_grad():
+            outputs = model(X)
         p_preds.append(outputs)
         y_preds.append(outputs.argmax(axis=1))
         y_gt.append(y)
