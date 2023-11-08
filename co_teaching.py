@@ -24,9 +24,7 @@ def train_co_teaching(
     tau = torch.mean(torch.diagonal(transition_matrix))
     R = 1
     epoch_k = 11
-    optimizer = optim.Adagrad(
-        chain(model_f.parameters(), model_g.parameters()), lr=lr, lr_decay=1e-6
-    )
+    optimizer = optim.Adam(chain(model_f.parameters(), model_g.parameters()), lr=lr)
 
     model_f.train()
     model_g.train()
@@ -145,10 +143,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-dataset-name", type=str, help="Name of the dataset")
     parser.add_argument("-exp-name", type=str, help="Experiment name to save the model")
-    parser.add_argument("--epochs", type=int, default=1, help="Number of epochs")
+    parser.add_argument("--epochs", type=int, default=200, help="Number of epochs")
     parser.add_argument("--batch-size", type=int, default=128, help="Batch size")
     parser.add_argument(
-        "--learning-rate", type=float, default=1e-2, help="Learning rate"
+        "--learning-rate", type=float, default=5e-4, help="Learning rate"
     )
     parser.add_argument("--save-model", action="store_true", help="Save the model")
 
