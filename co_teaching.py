@@ -24,8 +24,8 @@ def train_co_teaching(
     tau = torch.mean(torch.diagonal(transition_matrix))
     R = 1
     epoch_k = 11
-    optimizer = optim.Adam(
-        chain(model_f.parameters(), model_g.parameters()), lr=lr
+    optimizer = optim.Adagrad(
+        chain(model_f.parameters(), model_g.parameters()), lr=lr, lr_decay=1e-6
     )
 
     model_f.train()
@@ -94,12 +94,8 @@ def run_co_teaching(
 
     for i in range(n_splits):
         print(f"Training model {i}:")
-        train_dataset, val_dataset = random_split(
-            dataset, [train_size, val_size]
-        )
-        training_data = DataLoader(
-            train_dataset, batch_size=batch_size, shuffle=True
-        )
+        train_dataset, val_dataset = random_split(dataset, [train_size, val_size])
+        training_data = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
         val_data = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
 
         if dataset_name == "CIFAR":
@@ -127,7 +123,8 @@ def run_co_teaching(
         losses = []
         model.eval()
         for X, y in val_data:
-            output_probabilities = model(X)
+            with torch.no_grad():
+                output_probabilities = model(X)
             loss = F.cross_entropy(output_probabilities, y)
             losses.append(loss)
         models.append([model, torch.mean(torch.tensor(losses))])
@@ -147,21 +144,13 @@ def run_co_teaching(
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-dataset-name", type=str, help="Name of the dataset")
+    parser.add_argument("-exp-name", type=str, help="Experiment name to save the model")
+    parser.add_argument("--epochs", type=int, default=1, help="Number of epochs")
+    parser.add_argument("--batch-size", type=int, default=128, help="Batch size")
     parser.add_argument(
-        "-exp-name", type=str, help="Experiment name to save the model"
+        "--learning-rate", type=float, default=1e-2, help="Learning rate"
     )
-    parser.add_argument(
-        "--epochs", type=int, default=200, help="Number of epochs"
-    )
-    parser.add_argument(
-        "--batch-size", type=int, default=128, help="Batch size"
-    )
-    parser.add_argument(
-        "--learning-rate", type=float, default=5e-4, help="Learning rate"
-    )
-    parser.add_argument(
-        "--save-model", action="store_true", help="Save the model"
-    )
+    parser.add_argument("--save-model", action="store_true", help="Save the model")
 
     args = parser.parse_args()
     run_co_teaching(

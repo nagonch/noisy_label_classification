@@ -107,9 +107,7 @@ def eval(models_folder, dataset_name):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "-models-folder", type=str, help="Path to the evaluated model"
-    )
+    parser.add_argument("-models-folder", type=str, help="Path to the evaluated model")
     parser.add_argument("-dataset-name", type=str, help="Name of the dataset")
     args = parser.parse_args()
 

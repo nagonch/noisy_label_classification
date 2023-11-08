@@ -32,9 +32,7 @@ def val(
 
 
 def train(model, train_dataloader, val_dataloader, n_epochs, lr=0.01):
-    optimizer = optim.SGD(
-        model.parameters(), lr=lr, momentum=0.9, weight_decay=1e-5
-    )
+    optimizer = optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=1e-5)
     scheduler = optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.95)
 
     for epoch in tqdm(range(n_epochs)):
@@ -61,9 +59,7 @@ def train(model, train_dataloader, val_dataloader, n_epochs, lr=0.01):
                 val_ys.append(y)
                 output_logits = model(X)
                 val_preds.append(F.softmax(output_logits, dim=1))
-            val_accuracy = topk_accuracy(
-                torch.cat(val_preds), torch.cat(val_ys)
-            )
+            val_accuracy = topk_accuracy(torch.cat(val_preds), torch.cat(val_ys))
             print(
                 f"Val accuracy epoch {epoch}: {val_accuracy}, max prob: {torch.cat(val_preds).max()}"
             )
@@ -115,9 +111,7 @@ if __name__ == "__main__":
         training_dataloader = DataLoader(
             train_data, batch_size=train_size, shuffle=True
         )
-        val_dataloader = DataLoader(
-            val_data, batch_size=val_size, shuffle=True
-        )
+        val_dataloader = DataLoader(val_data, batch_size=val_size, shuffle=True)
         model = train(
             model,
             train_dataloader=training_dataloader,
@@ -132,9 +126,7 @@ if __name__ == "__main__":
         val_dataloader,
     )
 
-    estimation_dataloader = DataLoader(
-        train_data, batch_size=train_size, shuffle=True
-    )
+    estimation_dataloader = DataLoader(train_data, batch_size=train_size, shuffle=True)
 
     model.eval()
     result_T = torch.zeros((3, 3))

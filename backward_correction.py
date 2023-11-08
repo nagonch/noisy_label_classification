@@ -28,11 +28,7 @@ def train_backward_correction(
             output_probabilities = model(X)
             loss_per_label = -torch.log(output_probabilities + eps)
             loss_per_label = (inv_transition @ loss_per_label.T).T
-            loss = (
-                torch.gather(loss_per_label, -1, y.unsqueeze(-1))
-                .reshape(-1)
-                .mean()
-            )
+            loss = torch.gather(loss_per_label, -1, y.unsqueeze(-1)).reshape(-1).mean()
             loss.backward()
             optimizer.step()
     return model
@@ -67,12 +63,8 @@ def run_backward_correction(
 
     for i in range(n_splits):
         print(f"Training model {i}:")
-        train_dataset, val_dataset = random_split(
-            dataset, [train_size, val_size]
-        )
-        training_data = DataLoader(
-            train_dataset, batch_size=batch_size, shuffle=True
-        )
+        train_dataset, val_dataset = random_split(dataset, [train_size, val_size])
+        training_data = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
         val_data = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
 
         if dataset_name == "CIFAR":
@@ -92,14 +84,11 @@ def run_backward_correction(
         losses = []
         model.eval()
         for X, y in val_data:
-            output_probabilities = model(X)
+            with torch.no_grad():
+                output_probabilities = model(X)
             loss_per_label = -torch.log(output_probabilities + eps)
             loss_per_label = (inv_transition @ loss_per_label.T).T
-            loss = (
-                torch.gather(loss_per_label, -1, y.unsqueeze(-1))
-                .reshape(-1)
-                .mean()
-            )
+            loss = torch.gather(loss_per_label, -1, y.unsqueeze(-1)).reshape(-1).mean()
             losses.append(loss)
         models.append([model, torch.mean(torch.tensor(losses))])
     models = sorted(models, key=lambda x: x[-1])
@@ -118,21 +107,13 @@ def run_backward_correction(
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-dataset-name", type=str, help="Name of the dataset")
-    parser.add_argument(
-        "-exp-name", type=str, help="Experiment name to save the model"
-    )
-    parser.add_argument(
-        "--epochs", type=int, default=40, help="Number of epochs"
-    )
-    parser.add_argument(
-        "--batch-size", type=int, default=128, help="Batch size"
-    )
+    parser.add_argument("-exp-name", type=str, help="Experiment name to save the model")
+    parser.add_argument("--epochs", type=int, default=40, help="Number of epochs")
+    parser.add_argument("--batch-size", type=int, default=128, help="Batch size")
     parser.add_argument(
         "--learning-rate", type=float, default=1e-2, help="Learning rate"
     )
-    parser.add_argument(
-        "--save-model", action="store_true", help="Save the model"
-    )
+    parser.add_argument("--save-model", action="store_true", help="Save the model")
 
     args = parser.parse_args()
     run_backward_correction(
