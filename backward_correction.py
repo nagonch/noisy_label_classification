@@ -93,8 +93,8 @@ def run_backward_correction(
         models.append([model, torch.mean(torch.tensor(losses))])
     models = sorted(models, key=lambda x: x[-1])
     if save_model:
-        if not os.path.exists("exp_name"):
-            os.mkdir("exp_name")
+        if not os.path.exists(exp_name):
+            os.mkdir(exp_name)
         for i, (model, loss_val) in enumerate(models):
             print(f"top {i} validation loss value: {loss_val}")
             torch.save(
