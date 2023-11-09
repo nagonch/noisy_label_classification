@@ -14,31 +14,31 @@ import numpy as np
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-@torch.no_grad()
-def topk_accuracy(result, answer, topk=1):
-    # Source: https://gist.github.com/weiaicunzai/2a5ae6eac6712c70bde0630f3e76b77b
-    r"""
-    result (batch_size, class_cnt)
-    answer (batch_size)
-    """
-    # save the batch size before tensor mangling
-    bz = answer.size(0)
-    # ignore result values. its indices: (sz,cnt) -> (sz,topk)
-    values, indices = result.topk(topk)
-    # transpose the k best indice
-    result = indices.t()  # (sz,topk) -> (topk, sz)
-
-    # repeat same labels topk times to match result's shape
-    answer = answer.view(1, -1)  # (sz) -> (1,sz)
-    answer = answer.expand_as(result)  # (1,sz) -> (topk,sz)
-
-    correct = result == answer  # (topk,sz) of bool vals
-    correct = correct.flatten()  # (topk*sz) of bool vals
-    correct = correct.float()  # (topk*sz) of 1s or 0s
-    correct = correct.sum()  # counts 1s (correct guesses)
-    correct = correct.mul_(1 / bz)  # convert into decimal
-
-    return correct.item()
+def metrics(preds, y):
+    max_class = torch.max(y)
+    recall_list = []
+    precision_list = []
+    f1_list = []
+    top1_acc_list = []
+    for i in range(max_class + 1):
+        y_i = (y == i).to(torch.long)
+        pred_i = (preds == i).to(torch.long)
+        TP = torch.sum((y_i == 1) & (pred_i == 1)).item()
+        FP = torch.sum((y_i == 0) & (pred_i == 1)).item()
+        TN = torch.sum((y_i == 0) & (pred_i == 0)).item()
+        FN = torch.sum((y_i == 1) & (pred_i == 0)).item()
+        recall = TP / (TP + FN)
+        precision = TP / (TP + FP)
+        recall_list.append(recall)
+        precision_list.append(precision)
+        f1_list.append(2 * precision * recall / (precision + recall))
+        top1_acc_list.append((TP + TN) / y_i.shape[0])
+    return (
+        np.mean(recall_list),
+        np.mean(precision_list),
+        np.mean(f1_list),
+        np.mean(top1_acc_list),
+    )
 
 
 def eval(models_folder, dataset_name):
@@ -73,33 +73,13 @@ def eval(models_folder, dataset_name):
             y_gt.append(y)
         y_preds = torch.cat(y_preds)
         y_gt = torch.cat(y_gt)
-        p_preds = torch.cat(p_preds)
 
-        recall = MulticlassRecall(num_classes=3, average="macro")
-        recall.update(y_preds, y_gt)
-        if i == 0:
-            print(f"Cross validation selected model recall: {recall.compute()}")
+        recall, precision, f1, top1_acc = metrics(y_preds, y_gt)
 
-        precision = MulticlassPrecision(num_classes=3, average="macro")
-        precision.update(y_preds, y_gt)
-        if i == 0:
-            print(f"Cross validation selected model precision: {precision.compute()}")
-
-        f1 = MulticlassF1Score(num_classes=3, average="macro")
-        f1.update(y_preds, y_gt)
-        if i == 0:
-            print(f"Cross validation selected model by val loss f1: {f1.compute()}")
-
-        top1_acc_val = topk_accuracy(p_preds, y_gt)
-        if i == 0:
-            print(
-                f"Cross validation selected model by val loss top1 accuracy: {top1_acc_val}"
-            )
-
-        recalls.append(float(recall.compute()))
-        precisions.append(float(precision.compute()))
-        f1_vals.append(float(f1.compute()))
-        accuracy_vals.append(top1_acc_val)
+        recalls.append(recall)
+        precisions.append(precision)
+        f1_vals.append(f1)
+        accuracy_vals.append(top1_acc)
 
     mean_acc = round(np.mean(accuracy_vals), 4)
     mean_rec = round(np.mean(recalls), 4)
