@@ -2,11 +2,6 @@ import torch
 from data import FashionMNIST5, FashionMNIST6, CIFAR
 from model import FCN, LeNet
 from torch.utils.data import DataLoader
-from torcheval.metrics.classification import (
-    MulticlassRecall,
-    MulticlassPrecision,
-)
-from torcheval.metrics import MulticlassF1Score
 import argparse
 import os
 import numpy as np
