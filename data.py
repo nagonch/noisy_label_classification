@@ -10,12 +10,13 @@ class Dataset(TorchDataset):
     def __init__(self, path, train=True):
         self.path = path
         self.T = None
+        dataset = np.load(path)
         if train:
-            self.Xs = torch.tensor(np.load(f"{self.path}/Xtr.npy"))
-            self.Ys = torch.tensor(np.load(f"{self.path}/Str.npy"))
+            self.Xs = torch.tensor(dataset["Xtr"])
+            self.Ys = torch.tensor(dataset["Str"])
         else:
-            self.Xs = torch.tensor(np.load(f"{self.path}/Xts.npy"))
-            self.Ys = torch.tensor(np.load(f"{self.path}/Yts.npy"))
+            self.Xs = torch.tensor(dataset["Xts"])
+            self.Ys = torch.tensor(dataset["Yts"])
         self.Xs = self.Xs.float()
         self.Xs = (self.Xs - self.Xs.min()) / (self.Xs.max() - self.Xs.min())
         self.Xs = self.Xs.to(device)
@@ -27,7 +28,7 @@ class Dataset(TorchDataset):
 
 class FashionMNIST5(Dataset):
     def __init__(self, train=True):
-        super().__init__("datasets/FashionMNIST0.5", train)
+        super().__init__("datasets/FashionMNIST0.5.npz", train)
         self.T = torch.tensor([[0.5, 0.2, 0.3], [0.3, 0.5, 0.2], [0.2, 0.3, 0.5]]).to(
             device
         )
@@ -38,7 +39,7 @@ class FashionMNIST5(Dataset):
 
 class FashionMNIST6(Dataset):
     def __init__(self, train=True):
-        super().__init__("datasets/FashionMNIST0.6", train)
+        super().__init__("datasets/FashionMNIST0.6.npz", train)
         self.T = torch.tensor([[0.4, 0.3, 0.3], [0.3, 0.4, 0.3], [0.3, 0.3, 0.4]]).to(
             device
         )
@@ -49,7 +50,7 @@ class FashionMNIST6(Dataset):
 
 class CIFAR(Dataset):
     def __init__(self, train=True):
-        super().__init__("datasets/CIFAR", train)
+        super().__init__("datasets/CIFAR.npz", train)
         self.T = torch.tensor(
             [
                 [0.36434639, 0.32895993, 0.30669368],
@@ -63,4 +64,5 @@ class CIFAR(Dataset):
 
 
 if __name__ == "__main__":
-    pass
+    data = CIFAR()
+    print(data[0])
