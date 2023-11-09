@@ -96,9 +96,9 @@ def eval(models_folder, dataset_name):
                 f"Cross validation selected model by val loss top1 accuracy: {top1_acc_val}"
             )
 
-        recalls.append(recall.compute())
-        precisions.append(precision.compute())
-        f1_vals.append(f1.compute())
+        recalls.append(float(recall.compute()))
+        precisions.append(float(precision.compute()))
+        f1_vals.append(float(f1.compute()))
         accuracy_vals.append(top1_acc_val)
 
     mean_acc = round(np.mean(accuracy_vals), 4)
