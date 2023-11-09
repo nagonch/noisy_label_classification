@@ -21,7 +21,7 @@ def train_co_teaching(
     transition_matrix,
     lr=1e-2,
 ):
-    tau = torch.mean(torch.diagonal(transition_matrix))
+    tau = 1 - torch.mean(torch.diagonal(transition_matrix))
     R = 1
     epoch_k = 11
     optimizer = optim.Adam(chain(model_f.parameters(), model_g.parameters()), lr=lr)
