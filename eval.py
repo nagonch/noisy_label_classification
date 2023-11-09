@@ -14,7 +14,7 @@ import numpy as np
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-def metrics(preds, y):
+def metrics(preds, y, eps=1e-9):
     max_class = torch.max(y)
     recall_list = []
     precision_list = []
@@ -27,11 +27,11 @@ def metrics(preds, y):
         FP = torch.sum((y_i == 0) & (pred_i == 1)).item()
         TN = torch.sum((y_i == 0) & (pred_i == 0)).item()
         FN = torch.sum((y_i == 1) & (pred_i == 0)).item()
-        recall = TP / (TP + FN)
-        precision = TP / (TP + FP)
+        recall = TP / (TP + FN + eps)
+        precision = TP / (TP + FP + eps)
         recall_list.append(recall)
         precision_list.append(precision)
-        f1_list.append(2 * precision * recall / (precision + recall))
+        f1_list.append(2 * precision * recall / (precision + eps + recall))
         top1_acc_list.append((TP + TN) / y_i.shape[0])
     return (
         np.mean(recall_list),
