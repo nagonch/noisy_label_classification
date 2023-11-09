@@ -128,12 +128,12 @@ def run_co_teaching(
         models.append([model, torch.mean(torch.tensor(losses))])
     models = sorted(models, key=lambda x: x[-1])
     if save_model:
-        if not os.path.exists("model_weights"):
-            os.mkdir("model_weights")
+        if not os.path.exists(exp_name):
+            os.mkdir(exp_name)
         for i, (model, loss_val) in enumerate(models):
             torch.save(
                 model.state_dict(),
-                f"model_weights/{exp_name}_top_{str(i).zfill(2)}.pth",
+                f"{exp_name}/top_{str(i).zfill(2)}.pth",
             )
     return models
 
