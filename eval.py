@@ -101,10 +101,20 @@ def eval(models_folder, dataset_name):
         f1_vals.append(f1.compute())
         accuracy_vals.append(top1_acc_val)
 
-    print(f"Average accuracy over {i+1} models: {np.mean(accuracy_vals)}")
-    print(f"Average recalls over {i+1} models: {np.mean(recalls)}")
-    print(f"Average precisions over {i+1} models: {np.mean(precisions)}")
-    print(f"Average f1 over {i+1} models: {np.mean(f1_vals)}")
+    mean_acc = round(np.mean(accuracy_vals), 4)
+    mean_rec = round(np.mean(recalls), 4)
+    mean_prec = round(np.mean(precisions), 4)
+    mean_f1 = round(np.mean(f1_vals), 4)
+
+    std_acc = round(np.std(accuracy_vals), 4)
+    std_rec = round(np.std(recalls), 4)
+    std_prec = round(np.std(precisions), 4)
+    std_f1 = round(np.std(f1_vals), 4)
+
+    print(f"Average accuracy over {i+1} models: {mean_acc} +- {std_acc}")
+    print(f"Average recalls over {i+1} models: {mean_rec} +- {std_rec}")
+    print(f"Average precisions over {i+1} models: {mean_prec} +- {std_prec}")
+    print(f"Average f1 over {i+1} models: {mean_f1} +- {std_f1}")
 
 
 if __name__ == "__main__":
