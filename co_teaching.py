@@ -37,30 +37,28 @@ def train_co_teaching(
             losses_f = F.cross_entropy(f_pred, y, reduction="none")
             losses_g = F.cross_entropy(g_pred, y, reduction="none")
 
-            _, model_f_sm_idx = torch.topk(
+            _, f_indices = torch.topk(
                 losses_f, k=int(int(losses_f.size(0)) * R), largest=False
             )
-            _, model_g_sm_idx = torch.topk(
+            _, g_indices = torch.topk(
                 losses_g, k=int(int(losses_g.size(0)) * R), largest=False
             )
 
             # co-teaching
             model_f_loss_filter = torch.zeros((losses_f.size(0))).cuda()
-            model_f_loss_filter[model_g_sm_idx] = 1.0
+            model_f_loss_filter[g_indices] = 1.0
             losses_f = (model_f_loss_filter * losses_f).mean()
 
             model_g_loss_filter = torch.zeros((losses_g.size(0))).cuda()
-            model_g_loss_filter[model_f_sm_idx] = 1.0
+            model_g_loss_filter[f_indices] = 1.0
             losses_g = (model_g_loss_filter * losses_g).mean()
 
             optimizer.zero_grad()
             losses_f.backward()
-            torch.nn.utils.clip_grad_norm_(model_f.parameters(), 5.0)
             optimizer.step()
 
             optimizer.zero_grad()
             losses_g.backward()
-            torch.nn.utils.clip_grad_norm_(model_g.parameters(), 5.0)
             optimizer.step()
         R = 1 - tau * min(epoch / epoch_k, 1)
 
