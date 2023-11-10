@@ -102,8 +102,8 @@ def eval(models_folder, dataset_name):
 
     # Print the metrics
     print(f"Average accuracy over {i+1} models: {mean_acc} +- {std_acc}")
-    print(f"Average recalls over {i+1} models: {mean_rec} +- {std_rec}")
-    print(f"Average precisions over {i+1} models: {mean_prec} +- {std_prec}")
+    print(f"Average recall over {i+1} models: {mean_rec} +- {std_rec}")
+    print(f"Average precision over {i+1} models: {mean_prec} +- {std_prec}")
     print(f"Average f1 over {i+1} models: {mean_f1} +- {std_f1}")
 
 
