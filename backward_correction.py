@@ -20,6 +20,7 @@ def train_backward_correction(
 ):
     """
     Implements training using backward correction (Giorgio Patrini et al., 2017)
+
     model: A torch model
     train_loader: training dataloader
     inv_transition: an inverse of matrix T
@@ -55,11 +56,22 @@ def run_backward_correction(
     save_model=False,
     n_splits=10,
     eps=1e-6,
+    train_ratio=0.8,
 ):
     """
     1. Split training dataset into train and val
     2. Train n_splits models on different splits
     3. Save the models
+
+    dataset_name: one of ("CIFAR", "FashionMNIST5", "FashionMNIST6")
+    exp_name: arbitrary name of the experiments
+    n_epochs: number of epochs to train each model
+    batch_size: batch size of the training
+    lr: learning rate of the training
+    save_model: save model if true
+    n_splits: number of model versions to train on different splits
+    eps: numberical stability coefficient
+    train_ratio: fraction of the train dataset to train
     """
     dataset_name_to_object = {
         "CIFAR": CIFAR,
@@ -67,12 +79,11 @@ def run_backward_correction(
         "FashionMNIST6": FashionMNIST6,
     }
     dataset = dataset_name_to_object[dataset_name]()
+    # Only the inverse of the T matrix is used in the method eventually
     inv_transition = torch.linalg.inv(dataset.T).to(device)
-    if dataset.T is None:
-        raise RuntimeError("No transition matrix for backward correction")
 
     dataset_size = len(dataset)
-    train_ratio = 0.8
+    train_ratio = train_ratio
     train_size = int(train_ratio * dataset_size)
     val_size = dataset_size - train_size
 
@@ -85,10 +96,12 @@ def run_backward_correction(
         val_data = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
 
         if dataset_name == "CIFAR":
+            # LeNet for CIFAR for better performance
             model = LeNet(
                 3,
             ).to(device)
         else:
+            # Standard fully-connected model for FashionMNIST datasets
             model = FCN(dataset[0][0].shape[0], 3).to(device)
         model.train()
         model = train_backward_correction(
