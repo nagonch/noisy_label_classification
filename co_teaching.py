@@ -88,7 +88,22 @@ def run_co_teaching(
     lr=1e-2,
     save_model=False,
     n_splits=10,
+    train_ratio=0.8,
 ):
+    """
+    1. Split training dataset into train and val
+    2. Train n_splits models on different splits
+    3. Save the models
+
+    dataset_name: one of ("CIFAR", "FashionMNIST5", "FashionMNIST6")
+    exp_name: arbitrary name of the experiments
+    n_epochs: number of epochs to train each model
+    batch_size: batch size of the training
+    lr: learning rate of the training
+    save_model: save model if true
+    n_splits: number of model versions to train on different splits
+    train_ratio: fraction of the train dataset to train
+    """
     dataset_name_to_object = {
         "CIFAR": CIFAR,
         "FashionMNIST5": FashionMNIST5,
@@ -97,7 +112,6 @@ def run_co_teaching(
     dataset = dataset_name_to_object[dataset_name]()
 
     dataset_size = len(dataset)
-    train_ratio = 0.8
     train_size = int(train_ratio * dataset_size)
     val_size = dataset_size - train_size
 
@@ -133,6 +147,11 @@ def run_co_teaching(
             dataset.T,
             lr=lr,
         )
+
+        # Evaluate the validation loss for each model
+        # and rank the models
+        # NOTE: the ranking doesn't mean anything in this case,
+        # since the validation loss is noisy (labels are noisy)
         losses = []
         model.eval()
         for X, y in val_data:
