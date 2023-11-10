@@ -21,9 +21,20 @@ def train_co_teaching(
     transition_matrix,
     lr=1e-2,
 ):
-    tau = 1 - torch.mean(torch.diagonal(transition_matrix))
-    R = 1
-    epoch_k = 11
+    """
+    Implements the co-teaching training method (Bo Han et al., 2018)
+    model_f: the first model
+    model_g: the second model
+    train_loader: training dataloader
+    n_epochs: number of epochs
+    transition_matrix: the noise matrix T
+    lr: learning rate
+    """
+    epsilon = 1 - torch.mean(
+        torch.diagonal(transition_matrix)
+    )  # Calculating noise rate from the transition matrix
+    R = 1  # initially train on 100% of samples
+    epoch_k = 11  # epoch at which R stops reducing
     optimizer = optim.Adam(chain(model_f.parameters(), model_g.parameters()), lr=lr)
 
     model_f.train()
@@ -37,6 +48,7 @@ def train_co_teaching(
             losses_f = F.cross_entropy(f_pred, y, reduction="none")
             losses_g = F.cross_entropy(g_pred, y, reduction="none")
 
+            # get top R indices with smallest loss for each model
             _, f_indices = torch.topk(
                 losses_f, k=int(int(losses_f.size(0)) * R), largest=False
             )
@@ -44,7 +56,8 @@ def train_co_teaching(
                 losses_g, k=int(int(losses_g.size(0)) * R), largest=False
             )
 
-            # co-teaching
+            # backpropogate only most certain sample losses through the peer model
+            # (the co-teaching step)
             model_f_loss_filter = torch.zeros((losses_f.size(0))).cuda()
             model_f_loss_filter[g_indices] = 1.0
             losses_f = (model_f_loss_filter * losses_f).mean()
@@ -60,7 +73,9 @@ def train_co_teaching(
             optimizer.zero_grad()
             losses_g.backward()
             optimizer.step()
-        R = 1 - tau * min(epoch / epoch_k, 1)
+        R = 1 - epsilon * min(
+            epoch / epoch_k, 1
+        )  # reducing R until threshold epoch epoch_k
 
     return model_f
 
@@ -95,6 +110,7 @@ def run_co_teaching(
         val_data = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
 
         if dataset_name == "CIFAR":
+            # LeNet for CIFAR for better performance
             model_f = LeNet(
                 3,
             ).to(device)
@@ -102,6 +118,7 @@ def run_co_teaching(
                 3,
             ).to(device)
         else:
+            # Standard fully-connected model for FashionMNIST datasets
             model_f = FCN(dataset[0][0].shape[0], 3).to(device)
             model_g = FCN(dataset[0][0].shape[0], 3).to(device)
 
