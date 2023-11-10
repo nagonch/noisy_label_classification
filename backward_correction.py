@@ -38,7 +38,7 @@ def train_backward_correction(
             loss_per_label = -torch.log(output_probabilities + eps)  # Class-wise loss
             loss_per_label = (
                 inv_transition @ loss_per_label.T
-            ).T  # Corrected class-wise loss
+            ).T  # Backward correction of the loss
             loss = (
                 torch.gather(loss_per_label, -1, y.unsqueeze(-1)).reshape(-1).mean()
             )  # Reduce the loss to a single scalar
