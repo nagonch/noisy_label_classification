@@ -18,6 +18,14 @@ def train_backward_correction(
     lr=1e-2,
     eps=1e-9,
 ):
+    """
+    Implements training using backward correction (Giorgio Patrini et al., 2017)
+    model: A torch model
+    train_loader: training dataloader
+    inv_transition: an inverse of matrix T
+    lr: learning rate
+    eps: numerical stability coefficient
+    """
     optimizer = optim.Adagrad(model.parameters(), lr=lr, lr_decay=1e-6)
 
     model.train()
@@ -26,10 +34,14 @@ def train_backward_correction(
         for X, y in train_dataloader:
             optimizer.zero_grad()
             output_probabilities = model(X)
-            loss_per_label = -torch.log(output_probabilities + eps)
-            loss_per_label = (inv_transition @ loss_per_label.T).T
-            loss = torch.gather(loss_per_label, -1, y.unsqueeze(-1)).reshape(-1).mean()
-            loss.backward()
+            loss_per_label = -torch.log(output_probabilities + eps)  # Class-wise loss
+            loss_per_label = (
+                inv_transition @ loss_per_label.T
+            ).T  # Corrected class-wise loss
+            loss = (
+                torch.gather(loss_per_label, -1, y.unsqueeze(-1)).reshape(-1).mean()
+            )  # Reduce the loss to a single scalar
+            loss.backward()  # Backpropagate the loss
             optimizer.step()
     return model
 
@@ -44,6 +56,11 @@ def run_backward_correction(
     n_splits=10,
     eps=1e-6,
 ):
+    """
+    1. Split training dataset into train and val
+    2. Train n_splits models on different splits
+    3. Save the models
+    """
     dataset_name_to_object = {
         "CIFAR": CIFAR,
         "FashionMNIST5": FashionMNIST5,
@@ -83,6 +100,9 @@ def run_backward_correction(
         )
         losses = []
         model.eval()
+
+        # Evaluate the validation loss for each model
+        # and rank the models
         for X, y in val_data:
             with torch.no_grad():
                 output_probabilities = model(X)
