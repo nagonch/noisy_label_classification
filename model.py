@@ -3,10 +3,9 @@ import torch.nn.functional as F
 import torch
 
 
+# Define FCN model (for FashionMNIST5 and FashionMNIST6 usage)
 class FCN(nn.Module):
-    def __init__(
-        self, in_features, n_classes, hidden_size=128, return_logits=False
-    ):
+    def __init__(self, in_features, n_classes, hidden_size=128, return_logits=False):
         super().__init__()
         self.linear_in = nn.Linear(
             in_features,
@@ -34,6 +33,7 @@ class FCN(nn.Module):
         return F.softmax(x, dim=1)
 
 
+# Define LeNet model (for FashionMNIST5 and FashionMNIST6 usage)
 class LeNet(nn.Module):
     def __init__(self, out_classes, return_logits=False):
         super(LeNet, self).__init__()
