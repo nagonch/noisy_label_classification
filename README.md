@@ -1,3 +1,5 @@
+# noisy_label_classification
+
 How to run the code Install dependencies: pip install -r requirements.txt . We expect
 the datasets to be located in folder named datasets .
 
