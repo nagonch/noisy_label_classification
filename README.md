@@ -7,7 +7,7 @@ approach_” (**Backward correction**)
 labels_” (**Co-teaching**)
 - Jiacheng Cheng et al. “_Learning with bounded instance and label-dependent label noise_” (**Anchor points**)
 
-The repository was used to performe the experiments described [here](https://github.com/nagonch/noisy_label_classification/blob/main/fighting_label_noise.pdf).
+The repository was used to perform the experiments described [here](https://github.com/nagonch/noisy_label_classification/blob/main/fighting_label_noise.pdf).
 
 ## How to run the code
 Install dependencies: `pip install -r requirements.txt`. We expect
