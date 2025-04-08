@@ -1,6 +1,16 @@
-# noisy_label_classification
+# Fighting Label Noise: Empirical Study of Robust Classification Methods
 
-How to run the code Install dependencies: pip install -r requirements.txt . We expect
+This is an impementation of three papers dealing with label noise:
+- Giorgio Patrini et al. “_Making deep neural networks robust to label noise: A loss correction
+approach_” (**Backward correction**)
+- Bo Han et al. “_Co-teaching: Robust training of deep neural networks with extremely noisy
+labels_” (**Co-teaching**)
+- Jiacheng Cheng et al. “_Learning with bounded instance and label-dependent label noise_” (**Anchor points**)
+
+The repository was used to performe the experiments described [here](https://github.com/nagonch/noisy_label_classification/blob/main/fighting_label_noise.pdf).
+
+## How to run the code
+Install dependencies: `pip install -r requirements.txt`. We expect
 the datasets to be located in folder named datasets .
 
 • **Backward correction**. The file to run backward correction is `backward correction.py`.
